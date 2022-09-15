@@ -1,15 +1,12 @@
-# Sticky Note Widget
-A sticky note to be placed on the Windows desktop using Python's Tkinter module.
+# StickyNoteWidget
+A virtual sticky note to be placed on a Windows desktop using Python's Tkinter module.
 
 <p align="center">
   <img src="images/initialExample.JPG" alt="Example of Sticky Note Widget in action">
 </p>
 
-## Project Origin
-For a course's final project, the task description read: "All that we ask is that you build something of interest to you, that you solve an actual problem, that you impact your community, or that you change the world. **Strive to create something that outlives this course.**" Here we are.
-
-## Preface
-This project is still very much in beta, much of the code hanging by a thread along with inadequate style. I aim to fix its shortcomings in the near future, but for now, the requirements are a little obtuse.
+## What's New?
+- Converted StickyNoteWidget from a Procedural Program into an Object-Oriented Program (OOP). This will streamline debugging, adding new features, updating the code style, etc. **Does not change functionality whatsoever.**
 
 ## How to Install
 1. Ensure Python is installed along with the Tkinter library, which is typically included by default.
@@ -27,9 +24,10 @@ Must be forward slashes, not back slashes. Must end in a forward slash.
 
 ## Known Issues
 - Cannot handle certain characters well, such as emojis
+- Cannot boldface, italics, etc.
 - Cannot change color of the font text line.
-- Spawns a useless black box if opening outside the context of an IDE (Python's terminal window).
-- New size and location may be lost if user doesn't either type something or click `X` button to save the configuration; e.g., shutting down the computer or clicking the terminal's `X` button instead.
+- Spawns a useless black box (Python's terminal window) if opening outside the context of an IDE.
+- New size and location may be lost if user does not either type something or click `X` button to save the configuration; e.g., shutting down the computer or clicking the terminal's `X` button instead.
 - Text does not always wrap around the window properly.
 - The border size on the left, bottom, and right sides of the window are incongruent.
 - The x and y attributes slightly save the location of the window incorrectly, only solved with `rootx_adjust` and `rooty_adjust` in `immutable_configuration.txt`.
