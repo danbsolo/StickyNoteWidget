@@ -1,19 +1,21 @@
 import tkinter as tk
-from os import path, makedirs
+from os import path, mkdir, makedirs, scandir
 from datetime import datetime as date
 
 
 class StickyNoteWidget:
-    def __init__(self, parentWindow, title):
+    def __init__(self, parentWindow, ID, hub):
 
+        self.ID = ID
+        self.hub = hub
         self.parentWindow = parentWindow
         self.settings = {}
 
-        self.parentWindow.title(title)
+        self.parentWindow.title(self.ID)
 
         # absolute path of StickyNoteWidget.py + "/StickyNotes/" + title
         # Use this template to pinpoint the directory of every file.
-        parentDir = path.dirname(path.abspath(__file__)) + "/StickyNotes/" + title
+        parentDir = self.hub.parentDir + "/" + self.ID
 
         # date.today().isoweekday() will return today's day of the week as an integer. Monday is 1, Tuesday is 2...
         self.backupToday = parentDir + '/backup' + str(date.today().isoweekday()) + '.txt'
@@ -22,14 +24,14 @@ class StickyNoteWidget:
         self.configFile = parentDir + '/config.txt'
         self.immConfigFile = parentDir + '/immutableConfig.txt'
 
-        # if this specific StickyNote does not yet exist, create it. If the StickyNotes subfolder happens to not exist either, create that as well
+        # if this specific StickyNote does not yet exist, create it
         if not path.exists(parentDir):
             makedirs(parentDir)
 
         # if the ram file doesn't exist, create it
         if not path.exists(self.ramFile):
             with open(self.ramFile, 'w') as ramF:
-                ramF.write("Type here!")
+                ramF.write(self.ID)
 
         # if either config or immConfig doesn't exist, reset both
         if not (path.exists(self.configFile) and path.exists(self.immConfigFile)):
@@ -54,7 +56,7 @@ class StickyNoteWidget:
         self.parentWindow.configure(background=self.settings['barColor'])
         
         # create Text widget
-        self.textBox = tk.Text(root,
+        self.textBox = tk.Text(self.parentWindow,
             bg=self.settings['bgColor'], 
             fg=self.settings['fontColor'],
             font=(self.settings['fontFamily'], 
@@ -78,7 +80,7 @@ class StickyNoteWidget:
         self.textBox.bind('<KeyRelease>', lambda q: self.saveData())
 
         # Upon user clicking `X`, save the file before closing the window
-        self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: [self.saveData(), root.destroy()])
+        self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: [self.closeWindow()])
 
 
     def readTextData(self):
@@ -108,19 +110,95 @@ class StickyNoteWidget:
         with open(self.configFile, 'w') as configF:
             configF.write(
                 '{}x{}+{}+{}'.format(
-                    str(root.winfo_width()), 
-                    str(root.winfo_height()),
-                    str(root.winfo_rootx() 
+                    str(self.parentWindow.winfo_width()), 
+                    str(self.parentWindow.winfo_height()),
+                    str(self.parentWindow.winfo_rootx() 
                     + int(self.settings['xAdjust'])),
-                    str(root.winfo_rooty() 
+                    str(self.parentWindow.winfo_rooty() 
                     + int(self.settings['yAdjust']))
                 )
             )
+    
+
+    def closeWindow(self):
+        self.saveData()
+
+        self.parentWindow.destroy()
+
+        self.hub.removeStickyNote(self)
+    
+
+    def __repr__(self):
+        return self.ID
+
+        
+
+class StickyNoteHub:
+    def __init__(self, parentWindow):
+        
+        self.parentWindow = parentWindow
+        self.parentWindow.title("StickyNoteHub")
+        self.parentWindow.geometry("250x100")
+
+        # minimize the window using the "iconify()" method
+        self.parentWindow.iconify()
+
+
+        self.parentDir = path.dirname(path.abspath(__file__)) + "/StickyNotes"
+        # if the StickyNotes subfolder doesn't exist, create it
+        if not path.exists(self.parentDir):
+            mkdir(self.parentDir)
+
+
+        # keep track of which StickyNotes are currently open
+        self.openedStickyNotes = []
+
+        # open every StickyNote available and populate openedStickyNotes with their IDs
+        for x in scandir(self.parentDir):
+            if x.is_dir():
+                self.openedStickyNotes.append(StickyNoteWidget(tk.Toplevel(), x.name, self))
+
+        # if no StickyNotes available, make a default one
+        if self.openedStickyNotes == []:
+            self.openedStickyNotes.append(StickyNoteWidget(tk.Toplevel(), "mainSticky", self))
+
+        # create a label in the root window, then update text accordingly
+        self.openedStickyNoteLabel = tk.Label(self.parentWindow)
+        self.updateOpenedStickyNoteLabel()
+        self.openedStickyNoteLabel.pack()
+
+
+    def removeStickyNote(self, stickyNote: StickyNoteWidget):
+        
+        # close window and remove this StickyNote from list of opened StickyNotes
+        self.openedStickyNotes.remove(stickyNote)
+
+        self.updateOpenedStickyNoteLabel()
+        self.closeProgramIfEmpty()
+    
+
+    def updateOpenedStickyNoteLabel(self):
+        totalString = ""
+
+        for stickyNote in self.openedStickyNotes:
+            totalString += stickyNote.ID + "\n"
+
+        # do "[:-1]" of totalString to exclude the final newline character ("\n")
+        self.openedStickyNoteLabel.config(text=totalString[:-1])
+
+
+    
+    def closeProgramIfEmpty(self):
+
+        # if no StickyNoteWidgets are open anymore, close the whole program
+        if self.openedStickyNotes == []:
+            self.parentWindow.destroy()
+
 
 
 if __name__ == "__main__":
     root = tk.Tk()
 
-    StickyNoteWidget(root, "mainSticky")
+    StickyNoteHub(root)
 
     root.mainloop()
