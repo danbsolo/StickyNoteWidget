@@ -167,6 +167,9 @@ class StickyNoteHub:
         self.updateOpenedStickyNoteLabel()
         self.openedStickyNoteLabel.pack()
 
+        # Upon user clicking `X`, save the file before closing the window
+        self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: [self.closeProgram()])
+
 
     def removeStickyNote(self, stickyNote: StickyNoteWidget):
         
@@ -174,7 +177,10 @@ class StickyNoteHub:
         self.openedStickyNotes.remove(stickyNote)
 
         self.updateOpenedStickyNoteLabel()
-        self.closeProgramIfEmpty()
+
+        # if no StickyNoteWidgets are open anymore, close the whole program
+        if self.openedStickyNotes == []:
+            self.closeProgram()
     
 
     def updateOpenedStickyNoteLabel(self):
@@ -186,13 +192,12 @@ class StickyNoteHub:
         # do "[:-1]" of totalString to exclude the final newline character ("\n")
         self.openedStickyNoteLabel.config(text=totalString[:-1])
 
-
     
-    def closeProgramIfEmpty(self):
+    def closeProgram(self):
+        for stickyNote in self.openedStickyNotes:
+            stickyNote.saveData()
 
-        # if no StickyNoteWidgets are open anymore, close the whole program
-        if self.openedStickyNotes == []:
-            self.parentWindow.destroy()
+        self.parentWindow.destroy()
 
 
 
