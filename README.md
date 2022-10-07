@@ -5,7 +5,8 @@ A virtual Sticky Note to be placed on a Windows desktop using Python's Tkinter m
   <img src="images/initialExample.JPG" alt="Example of Sticky Note Widget in action">
 </p>
 
-## Features
+## Some Features
+> Need to update this section :^)
 - Automatically saves text, size, and location of window upon typing or clicking the `X` button. No need to manually save.
 - Automatically saves a backup for each day of the week, 7 backups in total.
 - Change attributes such as font size in `StickyNotes/NAME/immutableConfig.txt`.
@@ -25,8 +26,9 @@ A virtual Sticky Note to be placed on a Windows desktop using Python's Tkinter m
 ## What's New?
 - Wraps text around words (standard) as opposed to chars.
 - Converted `StickyNoteWidget.py` to `StickyNoteWidget.pyw` to remove terminal window spawn.
-- Added `StickyNoteWidget.exe` to increase accessibility.
+- Added `StickyNoteWidget.exe` to improve accessibility.
 - Left and right border widths are no longer slightly incongruent.
+- Converted the bar from a frame to a label widget.
 
 ## Old Changes
 - Saves configurations for all StickyNotes upon clicking `X` from `StickyNoteHub`; the root window.
