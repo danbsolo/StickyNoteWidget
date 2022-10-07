@@ -11,7 +11,9 @@ A virtual Sticky Note to be placed on a Windows desktop using Python's Tkinter m
 - Change attributes such as font size in `StickyNotes/NAME/immutableConfig.txt`.
 
 ## How to Install
-1. Ensure Python is installed along with the Tkinter library (typically included by default).
+1. 
+- If Python is installed, TKinter also needs to be installed, which is typically included by default. Download `StickyNoteWidget.pyw`.
+- If Python is **NOT** installed, download `StickyNoteWidget.exe`.
 2. Run once.
 3. To open multiple StickyNotes, create new folders in the `StickyNotes` directory, located in the same directory as `StickyNoteWidget.py`.
 4. Enjoy!
@@ -21,9 +23,13 @@ A virtual Sticky Note to be placed on a Windows desktop using Python's Tkinter m
 </p>
 
 ## What's New?
-- Saves configurations for all StickyNotes upon clicking `X` from `StickyNoteHub`; the root window.
+- Wraps text around words (standard) as opposed to chars.
+- Converted `StickyNoteWidget.py` to `StickyNoteWidget.pyw` to remove terminal window spawn.
+- Added `StickyNoteWidget.exe` to increase accessibility.
+- Left and right border widths are no longer slightly incongruent.
 
 ## Old Changes
+- Saves configurations for all StickyNotes upon clicking `X` from `StickyNoteHub`; the root window.
 - Can now process multiple StickyNotes simultaneously. Details in [How to Install](#how-to-install).
 - StickyNoteHub exists. Limited functionality as of now; just displays which StickyNotes are currently open.
 - Creates the necessary files if they do not exist yet and no longer requires the use of the pesky _Environment Variable_. All makes for a more streamlined installation process.
