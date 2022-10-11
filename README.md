@@ -24,13 +24,15 @@ A virtual Sticky Note to be placed on a Windows desktop using Python's Tkinter m
 </p>
 
 ## What's New?
+- Added a couple more commands. Use `ctrl + w` to save and quit. Use `ctrl + s` to save. Not very necessary as autosave covers most activity, but it does give an indicator for peace of mind.
+
+## Old Changes
+- Added a zoom in/out feature. AKA, increase or decrease the size of the font using the commands -> `ctrl + plus` and `ctrl + minus`.
 - Wraps text around words (standard) as opposed to chars.
 - Converted `StickyNoteWidget.py` to `StickyNoteWidget.pyw` to remove terminal window spawn.
 - Added `StickyNoteWidget.exe` to improve accessibility.
 - Left and right border widths are no longer slightly incongruent.
 - Converted the bar from a frame to a label widget.
-
-## Old Changes
 - Saves configurations for all StickyNotes upon clicking `X` from `StickyNoteHub`; the root window.
 - Can now process multiple StickyNotes simultaneously. Details in [How to Install](#how-to-install).
 - StickyNoteHub exists. Limited functionality as of now; just displays which StickyNotes are currently open.

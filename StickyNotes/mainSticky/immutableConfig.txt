@@ -1,0 +1,17 @@
+# Settings
+
+bgColor: #093553
+barColor: #2980B9
+
+fontColor: White
+fontFamily: Consolas
+fontSize: 12
+fontWeight: normal
+
+
+# set these to 0 if adjusting the window's spawn location isn't necessary
+xAdjust: -8
+yAdjust: -31
+
+# if unsure, leave at false
+ORR: false

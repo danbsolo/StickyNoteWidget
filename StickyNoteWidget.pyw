@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import font
 from os import path, mkdir, makedirs, scandir
 from datetime import datetime as date
 
@@ -53,14 +54,21 @@ class StickyNoteWidget:
         aestheticBar = tk.Label(parentWindow, bg=self.settings['barColor'])
         aestheticBar.pack()
 
+        
+        # Set up textBox's font using the font class for easy mutability
+        self.settings['fontSize'] = int(self.settings['fontSize'])
+
+        self.textBoxFont = font.Font(
+            family=self.settings['fontFamily'],
+            size=self.settings['fontSize'],
+            weight=self.settings['fontWeight'].lower()
+        )
 
         # create Text widget
         self.textBox = tk.Text(self.parentWindow,
             bg=self.settings['bgColor'], 
             fg=self.settings['fontColor'],
-            font=(self.settings['fontFamily'], 
-            int(self.settings['fontSize']), 
-            self.settings['fontWeight'].lower()),
+            font=self.textBoxFont,
             insertbackground=self.settings['fontColor'],
             bd=0,
             padx=8, pady=2, # spaces text away from the window's border a bit
@@ -77,11 +85,39 @@ class StickyNoteWidget:
         # `ORR == True` will result in no Windows title bar. This perhaps has better aesthetic but makes the window impossible to move and difficult to close (requires the use of "End Task" in Task Manager).
         self.parentWindow.overrideredirect(self.settings['ORR'])
 
+
         # Autosave constantly. `q` is a required filler variable; never used.
         self.textBox.bind('<KeyRelease>', lambda q: self.saveData())
 
+        # ctrl+plus/equal and ctrl+minus to increase and decrease fontSize by 1 respectively
+        self.textBox.bind('<Control-plus>', lambda q: self.changeFontSize(1))
+        self.textBox.bind('<Control-equal>', lambda q: self.changeFontSize(1))
+        self.textBox.bind('<Control-minus>', lambda q: self.changeFontSize(-1))
+
+        # close the current Sticky Note
+        self.textBox.bind('<Control-w>', lambda q: self.closeWindow())
+
+        # save the current Sticky Note. Mostly unused due to autosave feature.
+        self.textBox.bind('<Control-s>', 
+        lambda q: [self.saveData(), 
+        self.parentWindow.title("SAVED " + self.ID),
+        self.parentWindow.after(1000, lambda: self.parentWindow.title(self.ID))
+        ]
+        )
+
         # Upon user clicking `X`, save the file before closing the window
         self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: [self.closeWindow()])
+
+
+    def changeFontSize(self, increment):
+        
+        # minimum 8 and maximum 50 fontSize
+        if (self.settings['fontSize'] <= 8 and increment < 0) or \
+            (self.settings['fontSize'] >= 50 and increment > 0):
+            return
+
+        self.settings['fontSize'] += increment
+        self.textBoxFont.config(size = self.settings['fontSize'])
 
 
     def readTextData(self):
