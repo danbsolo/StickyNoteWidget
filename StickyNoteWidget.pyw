@@ -97,13 +97,12 @@ class StickyNoteWidget:
         # close the current Sticky Note
         self.textBox.bind('<Control-w>', lambda q: self.closeWindow())
 
-        # save the current Sticky Note. Mostly unused due to autosave feature.
+        # save the current Sticky Note. Autosave covers most actions regardless
         self.textBox.bind('<Control-s>', 
         lambda q: [self.saveData(), 
         self.parentWindow.title("SAVED " + self.ID),
         self.parentWindow.after(1000, lambda: self.parentWindow.title(self.ID))
-        ]
-        )
+        ])
 
         # Upon user clicking `X`, save the file before closing the window
         self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: [self.closeWindow()])
