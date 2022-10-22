@@ -71,7 +71,7 @@ class StickyNoteWidget:
 
         # save the current stickyNote. Autosave covers most actions regardless
         self.textBox.bind('<Control-s>', 
-        lambda q: [self.saveRawTextData(), 
+        lambda q: [self.saveAllData(), 
         self.parentWindow.title("*SAVED* " + self.title),
         self.parentWindow.after(1000, lambda: self.parentWindow.title(self.title))
         ])
@@ -165,10 +165,15 @@ class StickyNoteWidget:
         self.hub.connector.commit()
 
 
+    def saveAllData(self):
+
+        # so far, only one function in here as it's the only aspect of a stickyNote that isn't saved automatically upon being changed
+        self.savePositionData()
+
 
 
     def closeWindow(self):
-        self.saveRawTextData()
+        self.saveAllData()
 
         self.parentWindow.destroy()
 
@@ -284,7 +289,7 @@ class StickyNoteHub:
     
     def closeProgram(self):
         for stickyNote in self.openedStickyNotes:
-            stickyNote.saveRawTextData()
+            stickyNote.saveAllData()
         
         self.db.close()
         self.connector.close()
