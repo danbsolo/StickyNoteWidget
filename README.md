@@ -8,25 +8,23 @@ A virtual Sticky Note to be placed on a Windows desktop using Python's Tkinter m
 ## Some Features
 > Need to update this section :^)
 - Automatically saves text, size, and location of window upon typing or clicking the `X` button. No need to manually save.
-- Automatically saves a backup for each day of the week, 7 backups in total.
-- Change attributes such as font size in `StickyNotes/NAME/immutableConfig.txt`.
 
 ## How to Install
-1. 
-- If Python is installed, TKinter also needs to be installed, which is typically included by default. Download `StickyNoteWidget.pyw`.
-- If Python is **NOT** installed, download `StickyNoteWidget.exe`.
-2. Run once.
-3. To open multiple StickyNotes, create new folders in the `StickyNotes` directory, located in the same directory as `StickyNoteWidget.py`.
-4. Enjoy!
+1. Ensure Python, along with the TKinter library, is installed.
+2. Download `StickyNoteWidget.pyw`. Run once.
+3. Opening multiple notes requires configuring one's `stickyNoteDatabase.db`. (A native method will be implemented within the next few updates.)
 
 <p align="center">
   <img src="images/advancedExample.JPG" alt="Example of changed attributes">
 </p>
 
 ## What's New?
-- Added a couple more commands. Use `ctrl + w` to save and quit. Use `ctrl + s` to save. Not very necessary as autosave covers most activity, but it does give an indicator for peace of mind.
+- Replaced all folders and flat files with one `stickyNoteDatabase.db`. Having done so, development will become more streamlined.
+- The zoom in/out features now save.
+- Removed `StickyNoteWidget.exe`. As I do not have the ability to sign my exe files, there is *seemingly* no surefire way to ensure it is not recognized as a virus.
 
 ## Old Changes
+- Added a couple more commands. Use `ctrl + w` to save and quit. Use `ctrl + s` to save. Not very necessary as autosave covers most activity, but it does give an indicator for peace of mind.
 - Added a zoom in/out feature. AKA, increase or decrease the size of the font using the commands -> `ctrl + plus` and `ctrl + minus`.
 - Wraps text around words (standard) as opposed to chars.
 - Converted `StickyNoteWidget.py` to `StickyNoteWidget.pyw` to remove terminal window spawn.
