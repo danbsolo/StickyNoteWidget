@@ -2,7 +2,7 @@
 A virtual Sticky Note to be placed on a Windows desktop using Python's Tkinter module.
 
 <p align="center">
-  <img src="images/initialExample.JPG" alt="Example of StickyNoteWidget in action">
+  <img src="examples/basic.JPG" alt="Example of StickyNoteWidget in action">
 </p>
 
 ## Features
@@ -12,20 +12,22 @@ A virtual Sticky Note to be placed on a Windows desktop using Python's Tkinter m
 > Will update this section once the project's finished :^)
 ### How to Install 
 1. Ensure Python, along with the TKinter library, is installed.
-2. Download `StickyNoteWidget.pyw`.
-3. Run once.
-4. Enjoy!
+2. Download `StickyNoteWidget.zip`.
+3. Extract `StickyNoteWidget.zip`'s contents to a folder.
+4. From the extracted contents, execute `StickyNoteWidget.pyw`.
+5. Enjoy!
 
 **NOTE** Opening multiple stickyNotes requires configuring one's `stickyNoteDatabase.db` directly. (A native method will be implemented within the next few updates.)
 
 <p align="center">
-  <img src="images/advancedExample.JPG" alt="Example of changed attributes">
+  <img src="examples/features.JPG" alt="Example of changed attributes">
 </p>
 
 ## What's New?
-- Optimize to run faster. This is due to not running several SQLite queries per second. Instead, a stickyNote will only update the database when the user defocus from the window.
+- Added window icons :D Required to download the zip file to utilize them.
 
 ## Old Changes
+- Optimize to run faster. This is due to not running several SQLite queries per second. Instead, a stickyNote will only update the database when the user defocus from the window.
 - Replaced all folders and flat files with one `stickyNoteDatabase.db`. Having done so, development will become more streamlined.
 - The zoom in/out features now save.
 - Removed `StickyNoteWidget.exe`. As I do not have the ability to sign my exe files, there is *seemingly* no surefire way to ensure it is not recognized as a virus.

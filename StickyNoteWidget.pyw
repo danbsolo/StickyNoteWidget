@@ -13,10 +13,12 @@ class StickyNoteWidget:
         self.title = title
         self.parentWindow.title(self.title)
 
+        if path.exists(self.hub.parentDir + '/icons/bwStickyNote.ico'):
+            self.parentWindow.iconbitmap(self.hub.parentDir + '/icons/bwStickyNote.ico')
+
         self.settings = {}
         self.readSettings()
         self.setGeometry()
-
 
         # set color of the aestheticBar (directly below the titleBar)
         self.parentWindow.configure(background=self.settings['BarColor'])
@@ -71,7 +73,7 @@ class StickyNoteWidget:
 
         # upon user clicking `X`, save data before closing the window
         self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: self.closeWindow())
-
+        
 
     def insertRawText(self):
         self.textBox.insert(tk.INSERT, self.settings['RawText'])
@@ -165,6 +167,11 @@ class StickyNoteHub:
 
         # extract the absolute path of the current folder
         self.parentDir = path.dirname(path.abspath(__file__))
+        
+        # errorHandling: check if the file exists before using it
+        if path.exists(self.parentDir + '/icons/bwHub.ico'):
+            self.parentWindow.iconbitmap(self.parentDir + '/icons/bwHub.ico')
+
         self.databaseDir = self.parentDir + '/stickyNoteWidget.db'
 
         if path.exists(self.databaseDir):
