@@ -2,28 +2,35 @@
 A virtual Sticky Note to be placed on a Windows desktop using Python's Tkinter module.
 
 <p align="center">
-  <img src="images/initialExample.JPG" alt="Example of Sticky Note Widget in action">
+  <img src="images/initialExample.JPG" alt="Example of StickyNoteWidget in action">
 </p>
 
-## Some Features
-> Need to update this section :^)
-- Automatically saves text, size, and location of window upon typing or clicking the `X` button. No need to manually save.
+## Features
+> Will update this section once the project's finished :^)
 
-## How to Install
+## Tutorial
+> Will update this section once the project's finished :^)
+### How to Install 
 1. Ensure Python, along with the TKinter library, is installed.
-2. Download `StickyNoteWidget.pyw`. Run once.
-3. Opening multiple notes requires configuring one's `stickyNoteDatabase.db`. (A native method will be implemented within the next few updates.)
+2. Download `StickyNoteWidget.pyw`.
+3. Run once.
+4. Enjoy!
+
+**NOTE** Opening multiple stickyNotes requires configuring one's `stickyNoteDatabase.db` directly. (A native method will be implemented within the next few updates.)
 
 <p align="center">
   <img src="images/advancedExample.JPG" alt="Example of changed attributes">
 </p>
 
 ## What's New?
+- Optimize to run faster. This is due to not running several SQLite queries per second. Instead, a stickyNote will only update the database when the user defocus from the window.
+
+## Old Changes
 - Replaced all folders and flat files with one `stickyNoteDatabase.db`. Having done so, development will become more streamlined.
 - The zoom in/out features now save.
 - Removed `StickyNoteWidget.exe`. As I do not have the ability to sign my exe files, there is *seemingly* no surefire way to ensure it is not recognized as a virus.
 
-## Old Changes
+## Old Changes (before SQLite)
 - Added a couple more commands. Use `ctrl + w` to save and quit. Use `ctrl + s` to save. Not very necessary as autosave covers most activity, but it does give an indicator for peace of mind.
 - Added a zoom in/out feature. AKA, increase or decrease the size of the font using the commands -> `ctrl + plus` and `ctrl + minus`.
 - Wraps text around words (standard) as opposed to chars.
@@ -38,4 +45,3 @@ A virtual Sticky Note to be placed on a Windows desktop using Python's Tkinter m
 - Gave StickyNotes an ID: their title. No functional differences yet other than a change in the window's title and a reworked folder system.
 - Fixed the code's _style_ to something more readable. Includes making comments more insightful, better whitespace usage, etc. Also changed the names of several files, mostly removing underscores in favor of CamelCase.
 - Converted StickyNoteWidget from a Procedural Program into an Object-Oriented Program (OOP). This will streamline debugging, adding new features, updating the code style, etc. _Does not change functionality._
-

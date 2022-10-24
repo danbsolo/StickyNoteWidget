@@ -15,8 +15,8 @@ class StickyNoteWidget:
 
         self.settings = {}
         self.readSettings()
-
         self.setGeometry()
+
 
         # set color of the aestheticBar (directly below the titleBar)
         self.parentWindow.configure(background=self.settings['BarColor'])
@@ -45,39 +45,32 @@ class StickyNoteWidget:
             wrap=tk.WORD
         )
 
-        # if user changes window size, textBox is to expand to fill it
+        # if user resizes window, textBox is to expand to fill it
         self.textBox.pack(expand=tk.TRUE, fill=tk.BOTH)
         
         self.insertRawText()
 
-        # recursive function. Runs concurrently with the GUI.
-        self.parentWindow.update()
-        self.savePositionData()
 
-        
-        # autosave while typing. `q` is a required filler variable; never used.
-        self.textBox.bind('<KeyRelease>', lambda q: self.saveRawTextData())
+        # automatically save all relevant data when stickyNote loses focus
+        self.parentWindow.bind('<FocusOut>', lambda q: self.saveData())
 
-        # save window dimensions upon resizing window
-        self.textBox.bind('<Configure>', lambda q: self.saveDimensionData())
-
-        # ctrl+plus/equal and ctrl+minus to increase and decrease fontSize
-        self.textBox.bind('<Control-plus>', lambda q: self.changeFontSize(1))
-        self.textBox.bind('<Control-equal>', lambda q: self.changeFontSize(1))
-        self.textBox.bind('<Control-minus>', lambda q: self.changeFontSize(-1))
+        # ctrl+plus/equal and ctrl+minus to increase and decrease fontSize respectively
+        self.parentWindow.bind('<Control-plus>', lambda q: self.changeFontSize(1))
+        self.parentWindow.bind('<Control-equal>', lambda q: self.changeFontSize(1))
+        self.parentWindow.bind('<Control-minus>', lambda q: self.changeFontSize(-1))
 
         # close (and save) the current stickyNote
-        self.textBox.bind('<Control-w>', lambda q: self.closeWindow())
+        self.parentWindow.bind('<Control-w>', lambda q: self.closeWindow())
 
-        # save the current stickyNote. Autosave covers most actions regardless
-        self.textBox.bind('<Control-s>', 
-        lambda q: [self.saveAllData(), 
+        # save the current stickyNote. Autosave covers most actions regardless.
+        self.parentWindow.bind('<Control-s>', 
+        lambda q: [self.saveData(), 
         self.parentWindow.title("*SAVED* " + self.title),
         self.parentWindow.after(1000, lambda: self.parentWindow.title(self.title))
         ])
 
-        # upon user clicking `X`, save the file before closing the window
-        self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: [self.closeWindow()])
+        # upon user clicking `X`, save data before closing the window
+        self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: self.closeWindow())
 
 
     def insertRawText(self):
@@ -96,8 +89,8 @@ class StickyNoteWidget:
 
 
     def changeFontSize(self, increment):
+        """Minimum of 8. Maximum of 50."""
         
-        # minimum 8 and maximum 50 FontSize
         if (self.settings['FontSize'] <= 8 and increment < 0) or \
             (self.settings['FontSize'] >= 50 and increment > 0):
             return
@@ -112,7 +105,7 @@ class StickyNoteWidget:
                 self.settings['FontSize'],
                 self.title
             ))
-        
+
         
     def readSettings(self):        
         self.hub.db.execute("\
@@ -124,35 +117,19 @@ class StickyNoteWidget:
         self.settings = dict(self.hub.db.fetchone())
 
 
-    def saveRawTextData(self):        
-        self.hub.db.execute("UPDATE STICKYNOTE\
-            SET RawText == ?\
-            WHERE Title == ?", (
-                self.textBox.get('1.0', 'end-1c'),
-                self.title
-            ))
-
-        self.hub.connector.commit()
-
-
-    def saveDimensionData(self):
+    def saveData(self):
+        print("SAVING", self.title)
         self.hub.db.execute("\
             UPDATE STICKYNOTE\
-            SET DimensionX == ?,\
-            DimensionY == ?\
-            WHERE Title == ?", (
+            SET RawText == ?,\
+            DimensionX == ?,\
+            DimensionY == ?,\
+            PositionX == ?,\
+            PositionY == ?\
+            WHERE TITLE == ?", (
+                self.textBox.get('1.0', 'end-1c'),
                 self.parentWindow.winfo_width(),
                 self.parentWindow.winfo_height(),
-                self.title))
-
-        self.hub.connector.commit()
-
-
-    def savePositionData(self):
-        self.hub.db.execute("UPDATE STICKYNOTE\
-            SET PositionX == ?,\
-            PositionY == ?\
-            WHERE Title = ?", (
                 self.parentWindow.winfo_rootx() + 
                 self.hub.adjustPositions['AdjustPositionX'],
                 self.parentWindow.winfo_rooty() +
@@ -160,20 +137,11 @@ class StickyNoteWidget:
                 self.title
             ))
 
-        # 10000 miliseconds = 10 seconds
-        self.parentWindow.after(10000, self.savePositionData)
         self.hub.connector.commit()
 
 
-    def saveAllData(self):
-
-        # so far, only one function in here as it's the only aspect of a stickyNote that isn't saved automatically upon being changed
-        self.savePositionData()
-
-
-
     def closeWindow(self):
-        self.saveAllData()
+        self.saveData()
 
         self.parentWindow.destroy()
 
@@ -199,21 +167,21 @@ class StickyNoteHub:
         self.parentDir = path.dirname(path.abspath(__file__))
         self.databaseDir = self.parentDir + '/stickyNoteWidget.db'
 
-
         if path.exists(self.databaseDir):
             self.firstOpen = False
         else:
             self.firstOpen = True
 
-        # "row_factory" facilitates converting query results into dictionaries
+
+        # *row_factory* facilitates converting query results into dictionaries
         self.connector = sqlite.connect(self.databaseDir)
         self.connector.row_factory = sqlite.Row
         self.db = self.connector.cursor()
 
         if self.firstOpen:
             self.createSQLiteTables()
-
         
+
         # extract AdjustPositionX/Y data. Makes up for TKinter's glitchy geometry setting later
         if self.firstOpen:
             self.db.execute("\
@@ -229,7 +197,6 @@ class StickyNoteHub:
         self.adjustPositions = dict(self.db.fetchone())
 
 
-        # open all stickyNotes
         self.allStickyNotes = []
         self.openedStickyNotes = []
 
@@ -248,7 +215,7 @@ class StickyNoteHub:
 
         self.allStickyNotes = self.db.fetchall()
 
-
+        # open all sticky notes
         for stickyNote in self.allStickyNotes:
             stickyNote = dict(stickyNote)
             
@@ -256,18 +223,18 @@ class StickyNoteHub:
                 tk.Toplevel(), stickyNote['Title'], self))
 
 
-        # create a label in the root window, then update text accordingly
+        # create label that displays which stickyNotes are currently open
         self.openedStickyNoteLabel = tk.Label(self.parentWindow)
         self.updateOpenedStickyNoteLabel()
         self.openedStickyNoteLabel.pack()
 
-        # Upon user clicking `X`, save the file before closing the window
+        # Upon user clicking `X`, save all data before closing the window
         self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: [self.closeProgram()])
 
 
     def removeStickyNote(self, stickyNote: StickyNoteWidget):
         
-        # close window and remove this StickyNote from list of opened stickyNotes
+        # close window and remove this stickyNote from list of opened stickyNotes
         self.openedStickyNotes.remove(stickyNote)
 
         self.updateOpenedStickyNoteLabel()
@@ -289,7 +256,7 @@ class StickyNoteHub:
     
     def closeProgram(self):
         for stickyNote in self.openedStickyNotes:
-            stickyNote.saveAllData()
+            stickyNote.saveData()
         
         self.db.close()
         self.connector.close()
@@ -320,7 +287,6 @@ class StickyNoteHub:
             AdjustPositionX INT,\
             AdjustPositionY INT\
             )")
-
 
 
 
