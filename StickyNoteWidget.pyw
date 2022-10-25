@@ -2,14 +2,16 @@ import tkinter as tk
 from tkinter import font
 from os import path
 import sqlite3 as sqlite
+from tkinter import simpledialog
+from tkinter import messagebox
 
 
 class StickyNoteWidget:
     def __init__(self, parentWindow, title, stickyNoteHub):
-        
+
         self.hub = stickyNoteHub
         self.parentWindow = parentWindow
-
+        
         self.title = title
         self.parentWindow.title(self.title)
 
@@ -63,13 +65,6 @@ class StickyNoteWidget:
 
         # close (and save) the current stickyNote
         self.parentWindow.bind('<Control-w>', lambda q: self.closeWindow())
-
-        # save the current stickyNote. Autosave covers most actions regardless.
-        self.parentWindow.bind('<Control-s>', 
-        lambda q: [self.saveData(), 
-        self.parentWindow.title("*SAVED* " + self.title),
-        self.parentWindow.after(1000, lambda: self.parentWindow.title(self.title))
-        ])
 
         # upon user clicking `X`, save data before closing the window
         self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: self.closeWindow())
@@ -145,9 +140,9 @@ class StickyNoteWidget:
     def closeWindow(self):
         self.saveData()
 
-        self.parentWindow.destroy()
+        self.parentWindow.withdraw()
 
-        self.hub.removeStickyNote(self)
+        self.hub.removeStickyNoteObject(self)
     
 
     def __repr__(self):
@@ -157,10 +152,12 @@ class StickyNoteWidget:
 
 class StickyNoteHub:
     def __init__(self, parentWindow):
-        
+
         self.parentWindow = parentWindow
         self.parentWindow.title("StickyNoteHub")
-        self.parentWindow.geometry("250x100")
+
+
+        self.parentWindow.resizable(0, 0)
 
         # minimize the window; iconify it
         self.parentWindow.iconify()
@@ -174,10 +171,8 @@ class StickyNoteHub:
 
         self.databaseDir = self.parentDir + '/stickyNoteWidget.db'
 
-        if path.exists(self.databaseDir):
-            self.firstOpen = False
-        else:
-            self.firstOpen = True
+        # if the path exists, it's not the user's first open
+        self.firstOpen = not path.exists(self.databaseDir)
 
 
         # *row_factory* facilitates converting query results into dictionaries
@@ -204,65 +199,156 @@ class StickyNoteHub:
         self.adjustPositions = dict(self.db.fetchone())
 
 
-        self.allStickyNotes = []
-        self.openedStickyNotes = []
+        self.allStickyNoteObjects = []
+        self.openedStickyNoteObjects = []
 
         # default stickyNote
         if self.firstOpen:
-            self.db.execute(
-                "INSERT INTO StickyNote\
-                (Title, RawText, DimensionX, DimensionY, PositionX, PositionY, BgColor, BarColor, FontColor, FontFamily, FontSize) \
-                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                ("mainSticky", "mainSticky", 300, 200, 100, 100, "#093553", "#2980B9", "#FFFFFF", "Consolas", 12))
-
+            self.insertDefaultStickyNote("defaultSticky")
 
         self.db.execute("\
             SELECT * FROM STICKYNOTE\
-                ")
+            ORDER BY Title")
 
-        self.allStickyNotes = self.db.fetchall()
 
         # open all sticky notes
-        for stickyNote in self.allStickyNotes:
-            stickyNote = dict(stickyNote)
+        for stickyNoteData in self.db.fetchall():
+            stickyNoteData = dict(stickyNoteData)
+
+            stickyNoteObject = StickyNoteWidget(
+                tk.Toplevel(), stickyNoteData['Title'], self)
             
-            self.openedStickyNotes.append(StickyNoteWidget(
-                tk.Toplevel(), stickyNote['Title'], self))
+            self.allStickyNoteObjects.append(stickyNoteObject)
+            self.openedStickyNoteObjects.append(stickyNoteObject)
 
-
-        # create label that displays which stickyNotes are currently open
-        self.openedStickyNoteLabel = tk.Label(self.parentWindow)
-        self.updateOpenedStickyNoteLabel()
-        self.openedStickyNoteLabel.pack()
+        self.contentFrame = None
+        self.refreshHubContent()
+        
+        self.parentWindow.deiconify() # debug type code
 
         # Upon user clicking `X`, save all data before closing the window
         self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: [self.closeProgram()])
 
 
-    def removeStickyNote(self, stickyNote: StickyNoteWidget):
-        
-        # close window and remove this stickyNote from list of opened stickyNotes
-        self.openedStickyNotes.remove(stickyNote)
+    def updateHubContent(self, stickyNoteObject):            
+            tk.Label(self.contentFrame, text=stickyNoteObject.title, width=20).grid(row=self.nextRow, column=1, padx=20, pady=5)
+            
+            tk.Button(
+            self.contentFrame, text="TOG", 
+            command=lambda: [self.toggleOpen(stickyNoteObject)],
+            ).grid(row=self.nextRow, column=2, padx=5)
 
-        self.updateOpenedStickyNoteLabel()
+            tk.Button(self.contentFrame, text="DEL", 
+            command=lambda: self.deleteStickyNote(stickyNoteObject)
+            ).grid(row=self.nextRow, column=3, padx=5)
+
+            self.nextRow += 1
+
+
+    def toggleOpen(self, stickyNoteObject):
+        if stickyNoteObject.parentWindow.winfo_viewable():
+            stickyNoteObject.closeWindow()
+
+        else:
+            self.openedStickyNoteObjects.append(stickyNoteObject)
+            stickyNoteObject.parentWindow.deiconify()
+
+
+    def refreshHubContent(self):
+        if self.contentFrame:
+            self.contentFrame.destroy()
+        
+        self.contentFrame = tk.Frame(self.parentWindow)
+        self.contentFrame.grid()
+
+        self.nextRow = 0
+
+        self.addButton = tk.Button(
+            self.contentFrame, text="+", command=self.queryNewStickyNote)
+        self.addButton.grid(row=self.nextRow, column=3)
+
+        self.nextRow += 1
+
+        for stickyNoteObject in self.allStickyNoteObjects:
+            self.updateHubContent(stickyNoteObject)
+    
+
+    def deleteStickyNote(self, stickyNoteObject):
+        confirmation = messagebox.askyesno(
+            "Are you sure?", "{} is to be deleted. This is an irreversible action.".format(stickyNoteObject.title))
+        
+        if not confirmation:
+            return
+
+        self.removeStickyNoteObject(stickyNoteObject)
+        self.allStickyNoteObjects.remove(stickyNoteObject)
+        
+        self.refreshHubContent()
+
+        self.db.execute("\
+            DELETE FROM STICKYNOTE\
+            WHERE Title == '{}'".format(
+                stickyNoteObject.title))
+        
+        self.connector.commit()
+
+
+    def insertDefaultStickyNote(self, title):
+            self.db.execute(
+                "INSERT INTO StickyNote\
+                (Title, RawText, DimensionX, DimensionY, PositionX, PositionY, BgColor, BarColor, FontColor, FontFamily, FontSize) \
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (title, title, 300, 200, 400, 400, "#093553", "#2980B9", "#FFFFFF", "Consolas", 12))
+
+
+    def queryNewStickyNote(self):
+        newTitle = simpledialog.askstring("Add New stickyNote", "Enter new title~")
+
+        if newTitle.strip() == "":
+            return
+        elif len(newTitle) >= 21:
+            messagebox.showerror("TypeError", "Max character length of 20!")
+            return
+
+        if '\"' in newTitle or "\'" in newTitle:
+            messagebox.showerror("TypeError", "No quotation marks!")
+            return
+    
+        try:
+            self.insertDefaultStickyNote(newTitle)
+        except sqlite.IntegrityError:
+            messagebox.showerror("IntegrityError", "{} is already in use!".format(newTitle))
+            return
+
+        self.db.execute("\
+            SELECT * FROM STICKYNOTE\
+            WHERE Title == '{}'".format(
+                newTitle
+            ))
+        
+        newStickyNote = dict(self.db.fetchone())
+
+        newStickyNoteObject = StickyNoteWidget(
+            tk.Toplevel(), newStickyNote['Title'], self)
+
+        self.allStickyNoteObjects.append(newStickyNoteObject)
+        self.openedStickyNoteObjects.append(newStickyNoteObject)
+
+        self.updateHubContent(newStickyNoteObject)
+        
+
+    def removeStickyNoteObject(self, stickyNoteObject):
+        
+        # remove this stickyNoteObject from list
+        self.openedStickyNoteObjects.remove(stickyNoteObject)
 
         # if no stickyNotes are open anymore, close the whole program
-        if self.openedStickyNotes == []:
+        if self.openedStickyNoteObjects == []:
             self.closeProgram()
     
-
-    def updateOpenedStickyNoteLabel(self):
-        totalString = ""
-
-        for stickyNote in self.openedStickyNotes:
-            totalString += stickyNote.title + "\n"
-
-        # do "[:-1]" of totalString to exclude the final newline character ("\n")
-        self.openedStickyNoteLabel.config(text=totalString[:-1])
-
     
     def closeProgram(self):
-        for stickyNote in self.openedStickyNotes:
+        for stickyNote in self.openedStickyNoteObjects:
             stickyNote.saveData()
         
         self.db.close()
@@ -275,7 +361,7 @@ class StickyNoteHub:
         self.db.execute("\
             CREATE TABLE STICKYNOTE(\
             ID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\
-            Title TEXT UNIQUE,\
+            Title TEXT UNIQUE COLLATE NOCASE NOT NULL,\
             RawText TEXT,\
             DimensionX INT,\
             DimensionY INT,\
