@@ -1,32 +1,50 @@
 # StickyNoteWidget
-A virtual Sticky Note to be placed on a Windows desktop using Python's Tkinter module.
+A virtual stickyNote placed on a desktop screen.
+Uses Python, TKinter, and SQLite.
 
 <p align="center">
-  <img src="examples/basic.JPG" alt="Example of StickyNoteWidget in action">
+  <img src="examples/basic.JPG" alt="Basic example of StickyNoteWidget in action">
 </p>
 
-## Features
-> Will update this section once the project's finished :^)
-
 ## Tutorial
-> Will update this section once the project's finished :^)
 ### How to Install 
-1. Ensure Python, along with the TKinter library, is installed.
-2. Download `StickyNoteWidget.zip`.
-3. Extract `StickyNoteWidget.zip`'s contents to a folder.
+1. Ensure Python and TKinter are installed. TKinter is included in all standard Python distributions.
+2. Download and extract `StickyNoteWidget.zip`.
 4. From the extracted contents, execute `StickyNoteWidget.pyw`.
 5. Enjoy!
 
-**NOTE** Opening multiple stickyNotes requires configuring one's `stickyNoteDatabase.db` directly. (A native method will be implemented within the next few updates.)
+### Create New StickyNote
 
 <p align="center">
-  <img src="examples/features.JPG" alt="Example of changed attributes">
+  <img src="examples/createNewStickyNote1.JPG">
+</p>
+
+<p align="center">
+  <img src="examples/createNewStickyNote2.JPG">
+</p>
+
+### Delete a StickyNote
+
+<p align="center">
+  <img src="examples/deleteStickyNote1.JPG">
+</p>
+
+<p align="center">
+  <img src="examples/deleteStickyNote2.JPG">
+</p>
+
+## Features
+> Will update this section once the project's finished. For now, here's an extreme example :^)
+
+<p align="center">
+  <img src="examples/extreme.JPG">
 </p>
 
 ## What's New?
-- Added window icons :D Required to download the zip file to utilize them.
+- Added a few features to `StickyNoteHub`, such as creating and deleting stickyNotes.
 
 ## Old Changes
+- Added window icons :D Required to download the zip file to utilize them.
 - Optimize to run faster. This is due to not running several SQLite queries per second. Instead, a stickyNote will only update the database when the user defocus from the window.
 - Replaced all folders and flat files with one `stickyNoteDatabase.db`. Having done so, development will become more streamlined.
 - The zoom in/out features now save.
