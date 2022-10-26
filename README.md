@@ -1,5 +1,5 @@
 # StickyNoteWidget
-A virtual stickyNote placed on a desktop screen.
+A virtual stickyNote placed on a desktop screen.<br>
 Uses Python, TKinter, and SQLite.
 
 <p align="center">
