@@ -1,49 +1,85 @@
 # StickyNoteWidget
-A virtual stickyNote placed on a desktop screen.<br>
-Uses Python, TKinter, and SQLite.
+A virtual stickyNote placed on the desktop.<br>
+Uses Python, TKinter, Pillow, and SQLite.
 
 <p align="center">
   <img src="examples/basic.JPG" alt="Basic example of StickyNoteWidget in action">
 </p>
 
-## Tutorial
-### How to Install 
-1. Ensure Python and TKinter are installed. TKinter is included in all standard Python distributions.
-2. Download and extract `StickyNoteWidget.zip`.
-4. From the extracted contents, execute `StickyNoteWidget.pyw`.
-5. Enjoy!
-
-### Create New StickyNote
-
-<p align="center">
-  <img src="examples/createNewStickyNote1.JPG">
-</p>
-
-<p align="center">
-  <img src="examples/createNewStickyNote2.JPG">
-</p>
-
-### Delete a StickyNote
-
-<p align="center">
-  <img src="examples/deleteStickyNote1.JPG">
-</p>
-
-<p align="center">
-  <img src="examples/deleteStickyNote2.JPG">
-</p>
+---
 
 ## Features
-> Will update this section once the project's finished. For now, here's an extreme example :^)
+
+### Autosaves Any Change
+
+<p align="center">
+  <img src="examples/autosave.JPG">
+</p>
+
+### Use StickyNoteHub Buttons or Right Click Menu
+
+<p align="center">
+  <img src="examples/rightClickVsHub.JPG">
+</p>
+
+### Create or Delete stickyNotes
+
+<p align="center">
+  <img src="examples/createStickyNote.JPG">
+</p>
+
+<p align="center">
+  <img src="examples/deleteStickyNote.JPG">
+</p>
+
+### Change Attributes
+
+#### Color
+
+<p align="center">
+  <img src="examples/colors.JPG">
+</p>
+
+#### Font Family / Size (ctrl +/-)
+
+<p align="center">
+  <img src="examples/fontFamilySize.JPG">
+</p>
+
+#### Title
+
+<p align="center">
+  <img src="examples/title.JPG">
+</p>
+
+### Holistic View
+
+<p align="center">
+  <img src="examples/holisticView.JPG">
+</p>
+
+---
+
+## How to Install 
+1. Ensure Python and TKinter are installed. TKinter is included in all standard Python distributions.
+2. (Optional) [Install Pillow library](https://pillow.readthedocs.io/en/latest/installation.html). _Forgoing this library, the application will still function properly but `StickyNoteHub` will not have button icons._
+3. Either download and extract `StickyNoteWidget.zip` **OR** download `StickyNoteWidget.pyw`. The zip file includes all button icons, whereas the standalone Python file does not.
+4. Execute `StickyNoteWidget.pyw`.
+5. Enjoy!
 
 <p align="center">
   <img src="examples/extreme.JPG">
 </p>
 
+---
+
 ## What's New?
-- Added a few features to `StickyNoteHub`, such as creating and deleting stickyNotes.
+- Added several customization options: natively change the background, bar, and font color, font family, etc.
+- Added button icons
+- Added rightClickMenu
 
 ## Old Changes
+- Added a few features to `StickyNoteHub`, such as creating and deleting stickyNotes.
 - Added window icons :D Required to download the zip file to utilize them.
 - Optimize to run faster. This is due to not running several SQLite queries per second. Instead, a stickyNote will only update the database when the user defocus from the window.
 - Replaced all folders and flat files with one `stickyNoteDatabase.db`. Having done so, development will become more streamlined.
