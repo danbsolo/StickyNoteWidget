@@ -102,6 +102,10 @@ class StickyNoteWidget:
         self.rightClickMenu.add_separator()
 
         self.rightClickMenu.add_command(
+            label="Toggle OpenOnStartup", 
+            command=lambda: self.toggleOpenOnStartup())
+
+        self.rightClickMenu.add_command(
             label="Create stickyNote", 
             command=lambda: self.hub.createNewStickyNote())
         
@@ -111,7 +115,7 @@ class StickyNoteWidget:
 
 
         self.parentWindow.bind(
-            "<Button-3>", lambda event: self.rightClickPopup(event))
+            "<Button-3>", lambda e: self.rightClickPopup(e))
 
 
         # automatically save all relevant data when stickyNote loses focus
@@ -130,11 +134,32 @@ class StickyNoteWidget:
             '<Control-minus>', lambda e: self.changeFontSize(-1))
 
         # close (and save) the current stickyNote
-        self.parentWindow.bind('<Control-w>', lambda e: self.closeWindow())
+        self.parentWindow.bind('<Control-w>', lambda: self.closeWindow())
 
         # upon user clicking `X`, change some things, then withdraw window
         self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: self.closeWindow())
 
+
+    def toggleOpenOnStartup(self):
+        self.settings['OpenOnStartup'] = not self.settings['OpenOnStartup']
+
+
+        if self.settings['OpenOnStartup']:
+            color = self.hub.contentFrameBG
+        else:
+            color = "#B40000"
+            
+        self.toggleButton.config(bg=color, activebackground=color)
+
+
+        self.hub.db.execute("\
+            UPDATE STICKYNOTE\
+            SET OpenOnStartup == ?\
+            WHERE Title == ?", (
+                self.settings['OpenOnStartup'],
+                self.title
+            )
+        )
 
 
     def rightClickPopup(self, event):
@@ -207,11 +232,9 @@ class StickyNoteWidget:
 
 
     def closeWindow(self):
-        self.saveData()
+        self.parentWindow.withdraw()
 
         self.toggleButton.config(image=self.hub.toggleOffImage, text="off")
-
-        self.parentWindow.withdraw()
 
         self.hub.removeFromOpenStickyNotes(self)
 
@@ -285,8 +308,10 @@ class StickyNoteHub:
         self.db.execute("\
             SELECT Title FROM STICKYNOTE\
             ORDER BY Title")
+
+        startupData = self.db.fetchall()
         
-        for stickyNoteData in self.db.fetchall():
+        for stickyNoteData in startupData:
             stickyNoteData = dict(stickyNoteData)
 
             stickyNote = StickyNoteWidget(
@@ -294,6 +319,7 @@ class StickyNoteHub:
             
             self.allStickyNotes.append(stickyNote)
             self.openStickyNotes.append(stickyNote)
+
         
 
         # AdjustPositionX/Y values may be computer dependent, hence this check on each startup
@@ -305,7 +331,6 @@ class StickyNoteHub:
         self.contentFrameBG = "#202124" # near dark gray
         self.defaultBG = "#F0F0F0" # Windows 10's default bg (near white)
         self.darkerDefaultBG = "#B0B0B0"
-
 
 
         imageFileName = [
@@ -323,9 +348,15 @@ class StickyNoteHub:
         self.refreshHubContent()
 
 
+        # if value 'OpenOnStartup' == 0, closeWindow
+        # This has to be done after everything has been setup; otherwise, application breaks.
+        for stickyNote in self.allStickyNotes:
+            if not stickyNote.settings['OpenOnStartup']:
+                stickyNote.closeWindow()
+
+
         # Upon user clicking `X`, save all data before closing the window
         self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: [self.closeApplication()])
-
 
 
     
@@ -395,8 +426,7 @@ class StickyNoteHub:
                 self.contentFrame,
                 command=lambda: self.toggleStickyNoteWindow(stickyNote),
                 bg=self.contentFrameBG,
-                bd=0,
-                activebackground=self.contentFrameBG
+                bd=0
                 )
             stickyNote.toggleButton.grid(
                 row=self.currentRow, column=currentColumn,
@@ -409,6 +439,20 @@ class StickyNoteHub:
             else:
                 stickyNote.toggleButton.config(
                     image=self.toggleOffImage, text="off")
+
+
+            if stickyNote.settings['OpenOnStartup']:
+                color = self.contentFrameBG
+            else:
+                color = "#B40000"
+
+            stickyNote.toggleButton.config(
+                bg=color,
+                activebackground=color
+            )
+
+            stickyNote.toggleButton.bind(
+                "<Button-3>", lambda e: stickyNote.toggleOpenOnStartup())
 
             currentColumn += 1
 
@@ -736,11 +780,7 @@ class StickyNoteHub:
         
         self.connector.commit()
 
-        # if the application's already closed, no need to execute any further.
-        if stickyNote in self.openStickyNotes and self.removeFromOpenStickyNotes(
-            stickyNote):
-            return
-        
+        self.removeFromOpenStickyNotes(stickyNote)
         self.allStickyNotes.remove(stickyNote)
         
         stickyNote.parentWindow.destroy()
@@ -820,18 +860,9 @@ class StickyNoteHub:
         
 
     def removeFromOpenStickyNotes(self, stickyNote):
-        """Remove stickyNote from openStickyNotes. Close the application if no stickyNotes are open anymore.
-
-        Return True if application has indeed been closed. Otherwise, False."""
+        """Remove stickyNote from openStickyNotes. Close the application if no stickyNotes are open anymore."""
         
         self.openStickyNotes.remove(stickyNote)
-
-        # if no stickyNotes are open anymore, close the whole application
-        if self.openStickyNotes == []:
-            self.closeApplication()
-            return True
-        
-        return False
     
     
     def closeApplication(self):
@@ -856,6 +887,7 @@ class StickyNoteHub:
             DimensionY INT NOT NULL DEFAULT 200,\
             PositionX INT NOT NULL DEFAULT 400,\
             PositionY INT NOT NULL DEFAULT 400,\
+            OpenOnStartup INT NOT NULL DEFAULT True CHECK(OpenOnStartup IN (True, False)),\
             BackgroundColor VARCHAR(7) NOT NULL \
             DEFAULT '#093553' CHECK(BackgroundColor LIKE '#%'),\
             \
