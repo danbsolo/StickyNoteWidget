@@ -135,6 +135,23 @@ class StickyNoteWidget:
         # upon user clicking `X`, change some things, then withdraw window
         self.parentWindow.protocol('WM_DELETE_WINDOW', lambda: self.closeWindow())
 
+        self.textBox.bind('<Control-k>', lambda e: self.strikethrough())
+
+
+    def strikethrough(self):
+        strikethroughFont = font.Font(self.textBox, self.textBox.cget("font"))
+        strikethroughFont.configure(overstrike=1)
+
+        self.textBox.tag_configure("strikethrough", font=strikethroughFont)
+
+        currentTags = self.textBox.tag_names("sel.first")
+
+        if "strikethrough" in currentTags:
+            self.textBox.tag_remove('strikethrough', 'sel.first', 'sel.last')
+        else:
+            self.textBox.tag_add('strikethrough', 'sel.first', 'sel.last')
+        
+        return "break"
 
 
     def rightClickPopup(self, event):
